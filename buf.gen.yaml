@@ -1,0 +1,8 @@
+version: v1
+plugins:
+  - plugin: buf.build/protocolbuffers/java:v21.9
+    out: src/main/java
+  - plugin: buf.build/grpc/kotlin:v1.3.0
+    out: src/main/kotlin
+  - plugin: buf.build/grpc/java:v1.50.2
+    out: src/main/java

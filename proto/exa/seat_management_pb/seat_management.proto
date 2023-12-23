@@ -1,0 +1,33 @@
+// Copyright Exafunction, Inc.
+
+syntax = "proto3";
+
+package exa.seat_management_pb;
+
+import "exa/codeium_common_pb/codeium_common.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/Exafunction/Exafunction/exa/seat_management_pb";
+
+service SeatManagementService {
+  rpc GetUserStatus(GetUserStatusRequest) returns (GetUserStatusResponse) {}
+  rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse) {}
+}
+
+message GetUserStatusRequest {
+  codeium_common_pb.Metadata metadata = 1;
+}
+
+message GetUserStatusResponse {
+  codeium_common_pb.UserStatus user_status = 1;
+}
+
+
+message RegisterUserRequest {
+  string firebase_id_token = 1 [json_name = "firebase_id_token"];
+}
+
+message RegisterUserResponse {
+  string api_key = 1 [json_name = "api_key"];
+  string name = 2 [json_name = "name"];
+}

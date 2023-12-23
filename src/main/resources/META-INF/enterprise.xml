@@ -1,0 +1,129 @@
+<!--
+  ~ Copyright Exafunction, Inc.
+  -->
+
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin require-restart="true">
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>com.codeium.enterprise</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <name>Codeium Enterprise</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor email="hello@codeium.com" url="https://www.codeium.com">Codeium</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <description><![CDATA[
+    <h3>Codeium: Free AI-powered code acceleration</h3>
+
+    <p><a href="https://www.codeium.com">Codeium</a> is the modern coding superpower, a <b>free code</b> acceleration toolkit built on cutting edge AI technology. Currently, Codeium provides code completion tool in over 70+ languages, with lightning fast speeds and state-of-the-art suggestion quality.</p>
+
+    <p>There are many parts of the modern coding workflow that are boring, tedious, or frustrating, from regurgitating boilerplate to poring through StackOverflow. Recent advances in AI allow us to eliminate these parts, making it seamless to turn your ideas into code. With easy integration into all JetBrains IDEs and a <a href="https://www.codeium.com/jetbrains_tutorial">less than 2 minute installation process</a>, you can focus on being the best software developer, not the best code monkey.</p>
+
+    <p>With Codeium, you get:</p>
+
+    <ul>
+    <li>Unlimited single and multi-line code completions forever</li>
+    <li>Support for 70+ programming languages: Javascript, Python, Typescript, PHP, Go, Java, C, C++, Rust, Ruby, and more</li>
+    <li>Support through our <a href="https://discord.gg/3XFf78nAx5">Discord Community</a></li>
+    </ul>
+
+    <p>Join thousands of other developers who are using Codeium for free to accelerate their software iteration process, improve their code quality and consistency, reduce the number of code review iterations, accelerate developer onboarding, and keep them in their flow state. Want to learn more? Check out our <a href="https://www.codeium.com/faq">FAQ</a>.</p>
+
+    <h3>Your New Superpowers</h3>
+
+    <h4>Use Natural Language</h4>
+    <p>Need to make changes in an unfamiliar language or codebase? Instead of spending hours learning all of the syntactical and stylistic details, type out comments in natural language and let Codeium get the job done.</p>
+
+    <h4>Minimize Boilerplate Coding</h4>
+    <p>Sometimes feel like a code monkey copy-pasting and modifying boilerplate code over and over again? Let Codeium handle writing the repetitive work so that you can stay in the coding flow state, generating code faster than you can type.</p>
+
+    <h4>Find and Use APIs</h4>
+    <p>Spend too much time searching for API endpoints for a task or their signatures to properly interact with them? Codeium has seen thousands of different API calls and can insert them properly to match your needs, without ever leaving the IDE.</p>
+
+    <h4>Unit Test Generation</h4>
+    <p>Know that unit tests are important but find writing them mindnumbing? Let Codeium autogenerate test cases for you, making sure you never miss a pesky edge case. Test-driven development just got a whole lot easier.</p>
+
+    <h3>Support, Feedback, and Community</h3>
+    <p>We are actively working on improving the quality of the extension. Please feel free to report any issues,
+    suggestions, or exciting / interesting suggestions in <a href="https://discord.gg/3XFf78nAx5">our Discord</a>.</p>
+
+    <br>
+    <br>
+
+    <p><b>We hope you enjoy Codeium, your modern coding superpower!</b>
+  ]]></description>
+
+    <change-notes><![CDATA[
+    <p>Fixed bug in which code obfuscation resulted in a key collision with another plugin.</p>
+    ]]></change-notes>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="com.codeium.intellij.auth.CodeiumAuthService"/>
+        <applicationService serviceImplementation="com.codeium.intellij.statusbar.CodeiumStatusService"/>
+        <applicationService serviceImplementation="com.codeium.intellij.EditorManager"/>
+        <applicationService serviceImplementation="com.codeium.intellij.language_server.LanguageServerService"/>
+        <codeInsight.inlayProviderFactory
+                implementation="com.codeium.intellij.inlay_hints.FunctionInfoInlayProviderFactory"/>
+        <editorFactoryListener implementation="com.codeium.intellij.EditorListener"/>
+        <statusBarWidgetFactory id="Codeium" implementation="com.codeium.intellij.statusbar.CodeiumWidgetFactory"/>
+        <postStartupActivity implementation="com.codeium.intellij.language_server.LanguageServerLauncherActivity"/>
+        <projectService id="ChatViewerWindowService"
+                        serviceImplementation="com.codeium.intellij.chat_window.ChatViewerWindowService"/>
+        <applicationService serviceImplementation="com.codeium.intellij.settings.AppSettingsState"/>
+        <applicationConfigurable parentId="tools"
+                                 instance="com.codeium.intellij.settings.AppSettingsConfigurable"
+                                 id="com.codeium.AppSettingsConfigurable"
+                                 displayName="Codeium Settings"/>
+    </extensions>
+
+    <!-- Project listeners -->
+    <projectListeners>
+        <listener class="com.codeium.intellij.LookupListener"
+                  topic="com.intellij.codeInsight.lookup.LookupManagerListener"/>
+        <listener class="com.codeium.intellij.CodeiumFileEditorManagerListener"
+                  topic="com.intellij.openapi.fileEditor.FileEditorManagerListener.java"/>
+        <listener class="com.codeium.intellij.CodeiumModuleListener"
+                  topic="com.intellij.openapi.roots.ModuleRootListener"/>
+    </projectListeners>
+
+    <!-- Plugin actions -->
+    <actions>
+        <action id="com.codeium.intellij.auth.LogoutAction" class="com.codeium.intellij.auth.LogoutAction"
+                text="Log out of Codeium" description="Log out of Codeium"/>
+        <action id="com.codeium.intellij.auth.LoginAction" class="com.codeium.intellij.auth.LoginAction"
+                text="Log in to Codeium" description="Log in to Codeium"/>
+        <action id="com.codeium.intellij.auth.DisableCodeiumAction"
+                class="com.codeium.intellij.auth.DisableCodeiumAction" text="Disable Codeium"
+                description="Disable Codeium"/>
+        <action id="com.codeium.intellij.auth.EnableCodeiumAction" class="com.codeium.intellij.auth.EnableCodeiumAction"
+                text="Enable Codeium" description="Enable Codeium"/>
+        <action id="com.codeium.intellij.ShowNextCompletionAction" class="com.codeium.intellij.ShowNextCompletionAction"
+                text="Show Next Completion">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt CLOSE_BRACKET"/>
+            <keyboard-shortcut keymap="Mac OS X" first-keystroke="alt CLOSE_BRACKET" replace-all="true"/>
+            <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="alt CLOSE_BRACKET" replace-all="true"/>
+        </action>
+        <action id="com.codeium.intellij.ShowPreviousCompletionAction"
+                class="com.codeium.intellij.ShowPreviousCompletionAction" text="Show Previous Completion">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt OPEN_BRACKET"/>
+            <keyboard-shortcut keymap="Mac OS X" first-keystroke="alt OPEN_BRACKET" replace-all="true"/>
+            <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="alt OPEN_BRACKET" replace-all="true"/>
+        </action>
+        <action id="com.codeium.intellij.auth.ProvideAuthTokenAction"
+                class="com.codeium.intellij.auth.ProvideAuthTokenAction" text="Provide Auth Token"
+                description="Provide authentication token to Codeium"/>
+    </actions>
+
+
+</idea-plugin>
