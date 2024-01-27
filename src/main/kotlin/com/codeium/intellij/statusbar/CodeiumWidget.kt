@@ -41,7 +41,7 @@ class CodeiumWidget(project: Project) : EditorBasedStatusBarPopup(project, false
     val state = service<CodeiumStatusService>().getState()
     val tooltipText =
         if (state?.message.isNullOrEmpty()) {
-          "Codeium"
+          "Codeium " +  service<CodeiumStatusService>().getVersion()
         } else {
           state?.message!!
         }
