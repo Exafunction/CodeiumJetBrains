@@ -246,10 +246,11 @@ message Document {
   Range visible_range = 9;
 }
 
-// Next ID: 3, Previous field: insert_spaces.
+// Next ID: 4, Previous field: disable_autocomplete_in_comments.
 message EditorOptions {
   uint64 tab_size = 1;
   bool insert_spaces = 2;
+  bool disable_autocomplete_in_comments = 3;
 }
 
 enum CodeiumState {
