@@ -24,6 +24,7 @@ class AppSettingsState : PersistentStateComponent<AppSettingsState> {
   var chatInlayEnabled = true
   var indexingEnabled = false
   var indexingMaxFileCount = 5000
+  var enableInComments = false
 
   @Nullable
   override fun getState(): AppSettingsState {

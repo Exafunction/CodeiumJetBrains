@@ -6,6 +6,7 @@ package com.codeium.intellij
 
 import com.codeium.intellij.auth.CodeiumAuthService
 import com.codeium.intellij.language_server.LanguageServerService
+import com.codeium.intellij.settings.AppSettingsState
 import com.codeium.intellij.statusbar.CodeiumStatusService
 import com.intellij.codeInsight.lookup.LookupManager
 import com.intellij.injected.editor.VirtualFileWindow
@@ -240,6 +241,7 @@ class EditorManager {
     return CodeiumCommon.EditorOptions.newBuilder()
         .setInsertSpaces(!settings.isUseTabCharacter(editor.project))
         .setTabSize(settings.getTabSize(editor.project).toLong())
+        .setDisableAutocompleteInComments(!AppSettingsState.instance.enableInComments)
         .build()
   }
 

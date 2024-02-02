@@ -38,8 +38,10 @@ class AppSettingsConfigurable : Configurable {
   override fun isModified(): Boolean {
     val settings: AppSettingsState = AppSettingsState.instance
     return (codeiumSettingsComponent?.chatInlayEnabled != settings.chatInlayEnabled ||
-        codeiumSettingsComponent?.indexingEnabled != settings.indexingEnabled ||
-        codeiumSettingsComponent?.indexingMaxFileCount != settings.indexingMaxFileCount)
+            codeiumSettingsComponent?.indexingEnabled != settings.indexingEnabled ||
+            codeiumSettingsComponent?.indexingMaxFileCount != settings.indexingMaxFileCount ||
+            codeiumSettingsComponent?.enableInComments != settings.enableInComments
+            )
   }
 
   override fun apply() {
@@ -47,6 +49,7 @@ class AppSettingsConfigurable : Configurable {
     settings.chatInlayEnabled = codeiumSettingsComponent!!.chatInlayEnabled
     settings.indexingEnabled = codeiumSettingsComponent!!.indexingEnabled
     settings.indexingMaxFileCount = codeiumSettingsComponent!!.indexingMaxFileCount
+    settings.enableInComments = codeiumSettingsComponent!!.enableInComments
   }
 
   override fun reset() {
@@ -54,6 +57,7 @@ class AppSettingsConfigurable : Configurable {
     codeiumSettingsComponent!!.chatInlayEnabled = settings.chatInlayEnabled
     codeiumSettingsComponent!!.indexingEnabled = settings.indexingEnabled
     codeiumSettingsComponent!!.indexingMaxFileCount = settings.indexingMaxFileCount
+    codeiumSettingsComponent!!.enableInComments = settings.enableInComments
   }
 
   override fun disposeUIResources() {
@@ -66,18 +70,22 @@ class AppSettingsConfigurable : Configurable {
     private val chatInlayEnabledCheckBox = JBCheckBox("Enable Chat Inlay Hints ")
     private val indexingEnabledCheckBox = JBCheckBox("Enable Codeium Indexing (Requires Reload)")
     private val indexingMaxFileCountTextField = JBTextField("5000")
+    private val enableInCommentsCheckBox = JBCheckBox("If true, Codeium will provide autocomplete suggestions in comments.")
 
     init {
       indexingMaxFileCountTextField.setToolTipText(
-          "If indexing is enabled, we will only attempt to index workspaces that have up to this many files. This file count ignores .gitignore and binary files. Raising this limit from default may lead to performance issues. Values 0 or below will be treated as unlimited.")
+        "If indexing is enabled, we will only attempt to index workspaces that have up to this many files. This file count ignores .gitignore and binary files. Raising this limit from default may lead to performance issues. Values 0 or below will be treated as unlimited."
+      )
       panel =
-          FormBuilder.createFormBuilder()
-              .addComponent(chatInlayEnabledCheckBox, 1)
-              .addComponent(indexingEnabledCheckBox, 1)
-              .addLabeledComponent(
-                  "Indexing Max Workspace Size (File Count)", indexingMaxFileCountTextField, 1)
-              .addComponentFillVertically(JPanel(), 0)
-              .getPanel()
+        FormBuilder.createFormBuilder()
+          .addComponent(chatInlayEnabledCheckBox, 1)
+          .addComponent(indexingEnabledCheckBox, 1)
+          .addLabeledComponent(
+            "Indexing Max Workspace Size (File Count)", indexingMaxFileCountTextField, 1
+          )
+          .addComponent(enableInCommentsCheckBox, 1)
+          .addComponentFillVertically(JPanel(), 0)
+          .getPanel()
     }
 
     val preferredFocusedComponent: JComponent
@@ -97,6 +105,11 @@ class AppSettingsConfigurable : Configurable {
       get() = indexingMaxFileCountTextField.getText().toInt()
       set(newValue) {
         indexingMaxFileCountTextField.setText(newValue.toString())
+      }
+    var enableInComments: Boolean
+      get() = enableInCommentsCheckBox.isSelected
+      set(newStatus) {
+        enableInCommentsCheckBox.isSelected = newStatus
       }
   }
 }
