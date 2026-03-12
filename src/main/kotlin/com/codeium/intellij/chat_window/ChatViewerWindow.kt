@@ -11,11 +11,13 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefBrowserBase
 import com.intellij.ui.jcef.JBCefBrowserBuilder
 import com.intellij.ui.jcef.JBCefJSQuery
 import exa.codeium_common_pb.CodeiumCommon
+import java.awt.GraphicsEnvironment
 import java.net.URLEncoder
 import javax.swing.JComponent
 import kotlinx.coroutines.CoroutineScope
@@ -23,6 +25,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.cef.browser.CefBrowser
+import org.cef.browser.CefFrame
+import org.cef.handler.CefLoadHandlerAdapter
 
 fun convertToUrlSearchParams(params: Map<String, String>): String {
   val searchParams = StringBuilder()
@@ -56,6 +61,9 @@ class ChatViewerWindow(
 
     // If true, even location.reload() calls will open a browser window.
     browser.setOpenLinksInExternalBrowser(false)
+
+    // Compensate for JCEF double-scaling on Linux HiDPI displays.
+    applyHiDpiScalingFix()
 
     // Initialize the browser URL.
     CoroutineScope(Dispatchers.IO).launch { loadClient() }
@@ -138,6 +146,49 @@ class ChatViewerWindow(
   fun reload() {
     browserLoadedState.value = false
     loadClient()
+  }
+
+  /**
+   * On Linux with HiDPI displays, JCEF (Chromium) applies its own DPI-based scaling
+   * on top of Java2D's scaling, resulting in oversized content. This method detects the
+   * system scale factor and sets a compensating zoom level on the browser.
+   */
+  private fun applyHiDpiScalingFix() {
+    if (!SystemInfo.isLinux) return
+
+    val systemScale = getSystemScaleFactor()
+    if (systemScale <= 1.0) return
+
+    // CEF zoom formula: displayedZoom = 1.2^zoomLevel
+    // To counteract the extra system scaling, we need: displayedZoom = 1/systemScale
+    // So: zoomLevel = ln(1/systemScale) / ln(1.2)
+    val zoomLevel = Math.log(1.0 / systemScale) / Math.log(1.2)
+    logger.info(
+        "Applying HiDPI scaling fix: systemScale=$systemScale, zoomLevel=$zoomLevel")
+
+    browser.getJBCefClient().addLoadHandler(
+        object : CefLoadHandlerAdapter() {
+          override fun onLoadEnd(
+              cefBrowser: CefBrowser?,
+              frame: CefFrame?,
+              httpStatusCode: Int
+          ) {
+            cefBrowser?.setZoomLevel(zoomLevel)
+          }
+        },
+        browser.getCefBrowser())
+  }
+
+  private fun getSystemScaleFactor(): Double {
+    return try {
+      val ge = GraphicsEnvironment.getLocalGraphicsEnvironment()
+      val gd = ge.defaultScreenDevice
+      val transform = gd.defaultConfiguration.defaultTransform
+      transform.scaleX
+    } catch (e: Exception) {
+      logger.warn("Unable to determine system scale factor: $e")
+      1.0
+    }
   }
 
   override fun dispose() {
